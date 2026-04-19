@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-elev: #161616;
+    --bg-elev-2: #1f1f1f;
+    --border: #2a2a2a;
+    --text: #f5f5f5;
+    --text-dim: #8a8a8a;
+    --text-dimmer: #5a5a5a;
+    --accent: #c6ff3d;
+    --accent-dim: #7a9e1f;
+    --danger: #ff4d4d;
+    --rest: #3a8dff;
+    --display: 'Archivo Black', system-ui, sans-serif;
+    --body: 'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+
+  body {
+    min-height: 100vh;
+    padding-bottom: 90px;
+    background:
+      radial-gradient(ellipse at top right, rgba(198, 255, 61, 0.04), transparent 50%),
+      radial-gradient(ellipse at bottom left, rgba(58, 141, 255, 0.03), transparent 50%),
+      var(--bg);
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    font-family: var(--display);
+    font-size: 18px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .brand span { color: var(--accent); }
+
+  .bonus-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .bonus-btn:active { background: var(--bg-elev); }
+  .bonus-btn.logged { border-color: var(--accent); color: var(--accent); }
+
+  /* ---------- Tabs ---------- */
+  .tabs {
+    display: flex;
+    padding: 0 20px;
+    gap: 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 55px;
+    z-index: 19;
+  }
+  .tab {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    padding: 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    font-family: var(--body);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .tab.active { color: var(--text); }
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .page { padding: 24px 20px; display: none; }
+  .page.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---------- Today page ---------- */
+  .day-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .day-title {
+    font-family: var(--display);
+    font-size: 48px;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .day-title .accent { color: var(--accent); }
+
+  .day-subtitle {
+    color: var(--text-dim);
+    font-size: 15px;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  /* Progress strip */
+  .progress-strip {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .progress-ring { position: relative; width: 54px; height: 54px; flex-shrink: 0; }
+  .progress-ring svg { transform: rotate(-90deg); }
+  .progress-ring .ring-bg { stroke: var(--border); }
+  .progress-ring .ring-fg {
+    stroke: var(--accent);
+    transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .progress-ring .pct {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .progress-text { flex: 1; }
+  .progress-text .count { font-size: 15px; font-weight: 700; }
+  .progress-text .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Weather card (run days) */
+  .weather-card {
+    background: linear-gradient(135deg, rgba(58, 141, 255, 0.1), rgba(58, 141, 255, 0.02));
+    border: 1px solid rgba(58, 141, 255, 0.3);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .weather-icon { font-size: 32px; }
+  .weather-info { flex: 1; }
+  .weather-info .temp { font-size: 17px; font-weight: 700; }
+  .weather-info .verdict { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+  .weather-swap {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Rest day */
+  .rest-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 28px;
+    text-align: center;
+  }
+  .rest-card .icon { font-size: 48px; margin-bottom: 16px; }
+  .rest-card h2 {
+    font-family: var(--display);
+    font-size: 32px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .rest-card p { color: var(--text-dim); font-size: 14px; line-height: 1.6; }
+
+  /* Exercise list */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    margin-top: 8px;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .section-title .dim { color: var(--text-dim); }
+
+  .toggle-group {
+    display: inline-flex;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    margin-bottom: 18px;
+  }
+  .toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--body);
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+  }
+  .toggle-btn.active { background: var(--accent); color: #000; }
+
+  .exercise-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .exercise {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .exercise.done { opacity: 0.5; }
+  .exercise.done .ex-name { text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+
+  .ex-head {
+    display: flex;
+    align-items: center;
+    padding: 14px 14px 14px 14px;
+    gap: 12px;
+    cursor: pointer;
+  }
+
+  .check {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    background: transparent;
+    cursor: pointer;
+  }
+  .check.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .check.checked::after {
+    content: '';
+    width: 8px;
+    height: 14px;
+    border-right: 2.5px solid #000;
+    border-bottom: 2.5px solid #000;
+    transform: rotate(45deg) translateY(-2px);
+  }
+  .check:active { transform: scale(0.9); }
+
+  .ex-body { flex: 1; min-width: 0; }
+  .ex-name {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+  .ex-meta {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ex-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-dimmer); }
+  .ex-tag {
+    display: inline-block;
+    padding: 2px 7px;
+    background: var(--bg-elev-2);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+  }
+
+  .expand-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--text-dimmer);
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+  .exercise.expanded .expand-icon { transform: rotate(180deg); }
+
+  .ex-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+  .exercise.expanded .ex-detail { max-height: 500px; }
+
+  .ex-detail-inner {
+    padding: 0 14px 16px 54px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    margin-top: 0;
+  }
+  .ex-visual {
+    width: 100%;
+    background: var(--bg-elev-2);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .ex-frames {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 14px 8px 4px;
+    gap: 4px;
+  }
+  .ex-frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .ex-frame svg { width: 100%; height: 110px; max-width: 140px; }
+  .ex-frame-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .ex-arrow {
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: arrowPulse 1.6s ease-in-out infinite;
+  }
+  .ex-arrow svg { width: 24px; height: 24px; }
+  @keyframes arrowPulse {
+    0%, 100% { transform: translateX(0); opacity: 0.5; }
+    50% { transform: translateX(3px); opacity: 1; }
+  }
+  .ex-demo-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .ex-demo-link:active { background: rgba(198, 255, 61, 0.05); color: var(--accent); }
+  .ex-demo-link svg { width: 14px; height: 14px; }
+  .ex-cues {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .ex-cues strong { color: var(--text); display: block; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .ex-cues ul { list-style: none; padding-left: 0; }
+  .ex-cues li { padding: 3px 0; padding-left: 14px; position: relative; }
+  .ex-cues li::before { content: '•'; position: absolute; left: 0; color: var(--accent); }
+
+  /* Swap bar */
+  .swap-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .swap-btn {
+    flex: 1;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 13px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--body);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .swap-btn:active { background: var(--bg-elev-2); }
+
+  /* ---------- Week page ---------- */
+  .week-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+  }
+  .week-header h1 {
+    font-family: var(--display);
+    font-size: 32px;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+  }
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 18px;
+    line-height: 1.5;
+    padding: 12px 14px;
+    background: rgba(198, 255, 61, 0.05);
+    border-left: 2px solid var(--accent);
+    border-radius: 6px;
+  }
+
+  .week-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .day-row {
+    display: flex;
+    align-items: center;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    gap: 14px;
+    transition: all 0.25s;
+    cursor: pointer;
+    position: relative;
+  }
+  .day-row.today { border-color: var(--accent); }
+  .day-row.today::before {
+    content: 'TODAY';
+    position: absolute;
+    top: -7px;
+    right: 14px;
+    background: var(--accent);
+    color: #000;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+  }
+  .day-row.swap-selected {
+    border-color: var(--accent);
+    background: rgba(198, 255, 61, 0.08);
+  }
+
+  .day-num {
+    font-family: var(--display);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    width: 40px;
+    flex-shrink: 0;
+  }
+
+  .day-plan { flex: 1; }
+  .day-plan .plan-name {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .day-plan .plan-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .day-badge {
+    font-size: 10px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .badge-rest { background: rgba(58, 141, 255, 0.15); color: var(--rest); }
+  .badge-done { background: var(--accent); color: #000; }
+  .badge-partial { background: rgba(198, 255, 61, 0.15); color: var(--accent); }
+
+  /* ---------- Bottom nav ---------- */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(10, 10, 10, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 20;
+  }
+  .nav-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-dimmer);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    font-family: var(--body);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .nav-btn.active { color: var(--accent); }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: var(--bg-elev);
+    width: 100%;
+    max-width: 500px;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-top: 1px solid var(--border);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .modal h3 {
+    font-family: var(--display);
+    font-size: 20px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .modal p {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .modal-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .modal-item {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-item .ti { font-weight: 700; font-size: 14px; }
+  .modal-item .su { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .modal-close {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--body);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: var(--accent);
+    color: #000;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    z-index: 200;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    box-shadow: 0 10px 30px rgba(198, 255, 61, 0.3);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ---------- Exercise SVG animations ---------- */
+  .ex-anim { width: 100%; height: 100%; }
+  @keyframes pushup {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(14px); }
+  }
+  @keyframes squat {
+    0%, 100% { transform: translateY(0) scaleY(1); }
+    50% { transform: translateY(10px) scaleY(0.92); }
+  }
+  @keyframes curl {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-55deg); }
+  }
+  @keyframes press {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-18px); }
+  }
+  @keyframes row {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-12px); }
+  }
+  @keyframes run {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  @keyframes swim {
+    0% { transform: translateX(-5px) rotate(-3deg); }
+    50% { transform: translateX(5px) rotate(3deg); }
+    100% { transform: translateX(-5px) rotate(-3deg); }
+  }
+
+  .anim-body { animation-duration: 1.8s; animation-iteration-count: infinite; animation-timing-function: ease-in-out; }
+
+  /* No scrollbar on segmented mobile views */
+  ::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">TRAIN<span>/</span>05</div>
+  <button class="bonus-btn" id="bonusBtn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/></svg>
+    <span id="bonusLabel">Bonus run</span>
+  </button>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-page="today">Today</button>
+  <button class="tab" data-page="week">Week</button>
+</div>
+
+<!-- TODAY PAGE -->
+<div class="page active" id="todayPage"></div>
+
+<!-- WEEK PAGE -->
+<div class="page" id="weekPage">
+  <div class="week-header">
+    <h1>Your Week</h1>
+    <button class="reset-btn" id="resetBtn">Reset</button>
+  </div>
+  <div class="hint">Tap any day to swap it with another. Your completion state stays with the exercise, not the day.</div>
+  <div class="week-list" id="weekList"></div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" data-page="today">
+    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2 7-7 7 7 2 2"/><path d="M5 10v10h14V10"/></svg>
+    Today
+  </button>
+  <button class="nav-btn" data-page="week">
+    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Week
+  </button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ DATA MODEL ============
+
+const WORKOUTS = {
+  push: {
+    id: 'push',
+    name: 'Push',
+    subtitle: 'Chest, shoulders, triceps',
+    kind: 'gym',
+    exercises: [
+      { id: 'bench', name: 'Barbell bench press', machine: false, sets: '4 × 6-10', cues: ['Feet planted, slight arch', 'Bar to mid-chest', 'Drive through chest, not just arms'], anim: 'press' },
+      { id: 'chest_machine', name: 'Chest press machine', machine: true, sets: '3 × 10-12', cues: ['Adjust seat so handles at chest level', 'Control the return', 'Squeeze at the top'], anim: 'press' },
+      { id: 'incline_db', name: 'Incline dumbbell press', machine: false, sets: '3 × 8-12', cues: ['Bench at 30-45°', 'Press up and slightly together', 'Full range of motion'], anim: 'press' },
+      { id: 'shoulder_press', name: 'Seated shoulder press (machine or DB)', machine: true, sets: '3 × 8-12', cues: ['Keep core tight, no back arch', 'Press straight up', 'Don\'t lock elbows hard'], anim: 'press' },
+      { id: 'lateral', name: 'Dumbbell lateral raises', machine: false, sets: '3 × 12-15', cues: ['Slight bend in elbows', 'Raise to shoulder height, no higher', 'Lead with the elbows'], anim: 'lateral' },
+      { id: 'pushup', name: 'Push-ups', machine: false, sets: '2 × AMRAP', cues: ['Body in a straight line', 'Chest to floor', 'Push the floor away'], anim: 'pushup' },
+      { id: 'tricep_pd', name: 'Tricep pushdown (cable or machine)', machine: true, sets: '3 × 10-15', cues: ['Elbows locked at sides', 'Squeeze at the bottom', 'Full stretch at the top'], anim: 'pushdown' },
+      { id: 'tricep_dip', name: 'Bench dips or assisted dips', machine: false, sets: '3 × 10-12', cues: ['Keep elbows tucked', 'Lower until ~90° at elbow', 'Don\'t shrug shoulders'], anim: 'pushup' },
+    ],
+  },
+  pull: {
+    id: 'pull',
+    name: 'Pull',
+    subtitle: 'Back, biceps',
+    kind: 'gym',
+    exercises: [
+      { id: 'pullup', name: 'Pull-ups (or assisted)', machine: false, sets: '4 × AMRAP', cues: ['Hang fully at bottom', 'Pull chest to bar', 'Lead with the elbows, not hands'], anim: 'pullup' },
+      { id: 'lat_pd', name: 'Lat pulldown (machine)', machine: true, sets: '3 × 10-12', cues: ['Lean back slightly', 'Bar to upper chest', 'Squeeze lats at bottom'], anim: 'pullup' },
+      { id: 'row_barbell', name: 'Barbell row', machine: false, sets: '3 × 8-10', cues: ['Hinge at hips, flat back', 'Pull to lower chest', 'Control the negative'], anim: 'row' },
+      { id: 'row_machine', name: 'Seated cable or machine row', machine: true, sets: '3 × 10-12', cues: ['Chest up, shoulders back', 'Pull to belly button', 'Squeeze shoulder blades'], anim: 'row' },
+      { id: 'face_pull', name: 'Face pulls (cable)', machine: true, sets: '3 × 12-15', cues: ['Pull rope to forehead', 'External rotation at end', 'Light weight, high reps'], anim: 'row' },
+      { id: 'db_row', name: 'One-arm dumbbell row', machine: false, sets: '3 × 10 each', cues: ['Flat back, knee on bench', 'Pull to hip', 'Full stretch at bottom'], anim: 'row' },
+      { id: 'bb_curl', name: 'Barbell curl', machine: false, sets: '3 × 8-12', cues: ['Elbows pinned to sides', 'No swinging', 'Squeeze at the top'], anim: 'curl' },
+      { id: 'hammer', name: 'Hammer curls', machine: false, sets: '3 × 10-12', cues: ['Neutral grip (thumbs up)', 'Control down', 'Hits the long head of biceps'], anim: 'curl' },
+    ],
+  },
+  legs: {
+    id: 'legs',
+    name: 'Legs + Abs',
+    subtitle: 'Quads, hamstrings, glutes, core',
+    kind: 'gym',
+    exercises: [
+      { id: 'squat', name: 'Barbell back squat', machine: false, sets: '4 × 5-8', cues: ['Bar on upper traps', 'Knees track over toes', 'Break parallel if mobility allows'], anim: 'squat' },
+      { id: 'leg_press', name: 'Leg press (machine)', machine: true, sets: '3 × 10-12', cues: ['Feet shoulder-width', 'Don\'t lock knees at top', 'Full range, control down'], anim: 'squat' },
+      { id: 'rdl', name: 'Romanian deadlift', machine: false, sets: '3 × 8-10', cues: ['Soft knees, hinge at hips', 'Feel the hamstring stretch', 'Bar stays close to legs'], anim: 'hinge' },
+      { id: 'leg_curl', name: 'Leg curl (machine)', machine: true, sets: '3 × 10-12', cues: ['Full range — stretch and squeeze', 'Control the negative', 'Hamstring-focused'], anim: 'curl' },
+      { id: 'lunge', name: 'Walking lunges', machine: false, sets: '3 × 10 each leg', cues: ['Step long, knee tracks ankle', 'Back knee lightly touches', 'Drive through front heel'], anim: 'squat' },
+      { id: 'calf', name: 'Standing or seated calf raises', machine: true, sets: '3 × 12-15', cues: ['Full stretch at bottom', 'Pause and squeeze at top', 'Slow reps work better'], anim: 'calf' },
+      { id: 'plank', name: 'Plank', machine: false, sets: '3 × 45-60s', cues: ['Straight line from head to heels', 'Squeeze glutes and abs', 'Breathe'], anim: 'plank' },
+      { id: 'hanging_leg', name: 'Hanging leg raises', machine: false, sets: '3 × 10-15', cues: ['Don\'t swing', 'Raise legs to 90° or higher', 'Control down'], anim: 'pullup' },
+    ],
+  },
+  run: {
+    id: 'run',
+    name: 'Run',
+    subtitle: 'Outside if weather is good',
+    kind: 'run',
+    exercises: [
+      { id: 'warmup', name: 'Dynamic warm-up (5 min)', machine: false, sets: 'Leg swings, hip circles, high knees', cues: ['Get joints moving', 'Light and relaxed', 'No static stretching yet'], anim: 'run' },
+      { id: 'easy_run', name: 'Easy run', machine: false, sets: '30-45 min', cues: ['Conversational pace — able to talk', 'Nasal breathing if possible', 'Land midfoot, under hips'], anim: 'run' },
+      { id: 'cooldown', name: 'Cool-down walk', machine: false, sets: '5 min', cues: ['Slow walk, deep breaths', 'Drop heart rate gradually', 'Hydrate'], anim: 'run' },
+      { id: 'stretch', name: 'Post-run stretch', machine: false, sets: '5-10 min', cues: ['Hamstrings, calves, hip flexors', 'Hold 20-30s each', 'Foam roll if available'], anim: 'stretch' },
+    ],
+    alt: {
+      name: 'Indoor alternative',
+      exercises: [
+        { id: 'tread', name: 'Treadmill run or incline walk', machine: true, sets: '30-40 min', cues: ['Start easy, build pace', '1-2% incline mimics outdoor', 'Stay off the handrails'], anim: 'run' },
+        { id: 'rower', name: 'Rowing machine', machine: true, sets: '20-30 min', cues: ['Legs → back → arms', 'Arms → back → legs on return', 'Strong, steady pace'], anim: 'row' },
+        { id: 'bike', name: 'Stationary bike', machine: true, sets: '30-40 min', cues: ['Moderate resistance', 'Mix in 30s bursts every 3-5 min', 'Keep cadence 80+'], anim: 'bike' },
+      ],
+    },
+  },
+  flex: {
+    id: 'flex',
+    name: 'Wildcard',
+    subtitle: 'Full body or swim — your call',
+    kind: 'flex',
+    options: [
+      {
+        id: 'fullbody',
+        name: 'Full-body circuit',
+        exercises: [
+          { id: 'goblet', name: 'Goblet squat', machine: false, sets: '3 × 10', cues: ['Hold DB at chest', 'Sit between heels', 'Upright torso'], anim: 'squat' },
+          { id: 'db_press', name: 'DB bench or floor press', machine: false, sets: '3 × 10', cues: ['Keep tension', 'Full range', 'Breathe out on press'], anim: 'press' },
+          { id: 'bent_row', name: 'Bent-over DB row', machine: false, sets: '3 × 10 each', cues: ['Flat back', 'Row to hip', 'Squeeze at top'], anim: 'row' },
+          { id: 'kb_swing', name: 'Kettlebell swings', machine: false, sets: '3 × 15', cues: ['Hinge, not squat', 'Explosive hip drive', 'Arms are just ropes'], anim: 'hinge' },
+          { id: 'carry', name: 'Farmer\'s carry', machine: false, sets: '3 × 30m', cues: ['Heavy DBs in each hand', 'Shoulders packed', 'Walk tall'], anim: 'run' },
+        ],
+      },
+      {
+        id: 'swim',
+        name: 'Swim',
+        exercises: [
+          { id: 'sw_warmup', name: 'Warm-up laps', machine: false, sets: '200m easy', cues: ['Easy freestyle', 'Smooth breathing', 'Loose strokes'], anim: 'swim' },
+          { id: 'main_swim', name: 'Main set', machine: false, sets: '8 × 50m or 6 × 100m', cues: ['20-30s rest between', 'Moderate to hard pace', 'Focus on form, not speed'], anim: 'swim' },
+          { id: 'mixed', name: 'Mixed stroke', machine: false, sets: '200m', cues: ['Alternate freestyle / breaststroke', 'Work different muscles', 'Keep steady pace'], anim: 'swim' },
+          { id: 'cooldown_swim', name: 'Cool-down', machine: false, sets: '100m easy', cues: ['Very easy', 'Long glides', 'Settle breathing'], anim: 'swim' },
+        ],
+      },
+    ],
+  },
+  rest: { id: 'rest', name: 'Rest', subtitle: 'Recovery', kind: 'rest' },
+};
+
+const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAY_NAMES_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+// Default schedule (index = day of week, 0 = Mon)
+const DEFAULT_SCHEDULE = ['push', 'pull', 'rest', 'run', 'flex', 'legs', 'rest'];
+
+// ============ STATE ============
+
+const STORAGE_KEY = 'train05_state_v1';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return null;
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function getWeekKey(d = new Date()) {
+  const date = new Date(d);
+  const day = (date.getDay() + 6) % 7; // Mon=0
+  date.setDate(date.getDate() - day);
+  date.setHours(0, 0, 0, 0);
+  return date.toISOString().slice(0, 10);
+}
+
+function getTodayIdx() {
+  return (new Date().getDay() + 6) % 7; // 0 = Mon
+}
+
+let state = loadState() || {
+  schedule: [...DEFAULT_SCHEDULE],
+  weekKey: getWeekKey(),
+  completion: {}, // { weekKey: { dayIdx: { exId: true } } }
+  indoor: {},     // { weekKey: { dayIdx: true } }  for run days swapped indoors
+  flexChoice: {}, // { weekKey: { dayIdx: 'fullbody' | 'swim' } }
+  bonus: {},      // { weekKey: count }
+  toggle: 'all',  // 'all' | 'machine' | 'no-machine'
+};
+
+// Auto-reset completion if a new week has started
+(function checkWeekRollover() {
+  const currentWeek = getWeekKey();
+  if (state.weekKey !== currentWeek) {
+    state.weekKey = currentWeek;
+    saveState();
+  }
+})();
+
+// ============ HELPERS ============
+
+function getCompletion(dayIdx) {
+  return (state.completion[state.weekKey]?.[dayIdx]) || {};
+}
+
+function setExerciseDone(dayIdx, exId, done) {
+  if (!state.completion[state.weekKey]) state.completion[state.weekKey] = {};
+  if (!state.completion[state.weekKey][dayIdx]) state.completion[state.weekKey][dayIdx] = {};
+  if (done) state.completion[state.weekKey][dayIdx][exId] = true;
+  else delete state.completion[state.weekKey][dayIdx][exId];
+  saveState();
+}
+
+function getBonus() { return state.bonus[state.weekKey] || 0; }
+function incrementBonus() {
+  state.bonus[state.weekKey] = (state.bonus[state.weekKey] || 0) + 1;
+  saveState();
+}
+
+function getFlexChoice(dayIdx) {
+  return state.flexChoice[state.weekKey]?.[dayIdx] || null;
+}
+function setFlexChoice(dayIdx, choice) {
+  if (!state.flexChoice[state.weekKey]) state.flexChoice[state.weekKey] = {};
+  state.flexChoice[state.weekKey][dayIdx] = choice;
+  saveState();
+}
+
+function getIndoor(dayIdx) {
+  return state.indoor[state.weekKey]?.[dayIdx] === true;
+}
+function setIndoor(dayIdx, val) {
+  if (!state.indoor[state.weekKey]) state.indoor[state.weekKey] = {};
+  state.indoor[state.weekKey][dayIdx] = val;
+  saveState();
+}
+
+function getExercisesForDay(dayIdx) {
+  const workoutId = state.schedule[dayIdx];
+  const w = WORKOUTS[workoutId];
+  if (!w) return [];
+  if (w.kind === 'rest') return [];
+  if (w.kind === 'run') {
+    return getIndoor(dayIdx) ? w.alt.exercises : w.exercises;
+  }
+  if (w.kind === 'flex') {
+    const choice = getFlexChoice(dayIdx);
+    if (!choice) return [];
+    return w.options.find(o => o.id === choice)?.exercises || [];
+  }
+  return w.exercises;
+}
+
+function getDayStatus(dayIdx) {
+  const w = WORKOUTS[state.schedule[dayIdx]];
+  if (w.kind === 'rest') return 'rest';
+  const exs = getExercisesForDay(dayIdx);
+  if (exs.length === 0) return 'none';
+  const comp = getCompletion(dayIdx);
+  const done = exs.filter(e => comp[e.id]).length;
+  if (done === 0) return 'none';
+  if (done === exs.length) return 'done';
+  return 'partial';
+}
+
+// ============ EXERCISE DIAGRAMS ============
+// Two-position anatomical diagrams: start and end of each movement.
+// Shows the actual body positions so you can see form, not just motion.
+
+const COLOR = '#c6ff3d';
+const MUTED = '#4a4a4a';
+const SKIN = '#1f1f1f';
+
+// Building blocks: a more anatomical figure than stick figures
+// Each function returns SVG for a specific position of an exercise.
+
+function figStanding(opts = {}) {
+  const { x = 100, y = 30, armAngle = 0, legBend = 0, bar = null, db = null, lean = 0 } = opts;
+  // Base figure: head, torso, two arms, two legs
+  const bodyX = x;
+  const headR = 9;
+  const bodyTop = y + headR + 2;
+  const bodyBottom = bodyTop + 40 - legBend * 0.3;
+  const hipY = bodyBottom;
+  const kneeY = hipY + 30 - legBend;
+  const footY = hipY + 60 - legBend * 0.5;
+  const shoulderY = bodyTop + 6;
+  const armLen = 30;
+
+  const armEndX1 = bodyX - 10 - Math.sin(armAngle * Math.PI / 180) * armLen;
+  const armEndY1 = shoulderY + Math.cos(armAngle * Math.PI / 180) * armLen;
+  const armEndX2 = bodyX + 10 + Math.sin(armAngle * Math.PI / 180) * armLen;
+  const armEndY2 = shoulderY + Math.cos(armAngle * Math.PI / 180) * armLen;
+
+  const leanOffset = lean;
+
+  let barSvg = '';
+  if (bar) {
+    const barY = bar.y || shoulderY + 5;
+    barSvg = `<line x1="${bodyX - 35}" y1="${barY}" x2="${bodyX + 35}" y2="${barY}" stroke="${MUTED}" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="${bodyX - 35}" cy="${barY}" r="5" fill="${MUTED}"/>
+              <circle cx="${bodyX + 35}" cy="${barY}" r="5" fill="${MUTED}"/>`;
+  }
+  let dbSvg = '';
+  if (db) {
+    dbSvg = `<rect x="${armEndX1 - 6}" y="${armEndY1 - 4}" width="12" height="8" rx="2" fill="${MUTED}"/>
+             <rect x="${armEndX2 - 6}" y="${armEndY2 - 4}" width="12" height="8" rx="2" fill="${MUTED}"/>`;
+  }
+
+  return `
+    <!-- head -->
+    <circle cx="${bodyX + leanOffset}" cy="${y + headR}" r="${headR}" fill="${COLOR}"/>
+    <!-- torso -->
+    <path d="M ${bodyX - 8 + leanOffset} ${bodyTop} L ${bodyX + 8 + leanOffset} ${bodyTop} L ${bodyX + 7} ${hipY} L ${bodyX - 7} ${hipY} Z" fill="${COLOR}"/>
+    <!-- arms -->
+    <line x1="${bodyX - 8 + leanOffset}" y1="${shoulderY}" x2="${armEndX1}" y2="${armEndY1}" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="${bodyX + 8 + leanOffset}" y1="${shoulderY}" x2="${armEndX2}" y2="${armEndY2}" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+    <!-- legs -->
+    <line x1="${bodyX - 5}" y1="${hipY}" x2="${bodyX - 8}" y2="${kneeY}" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="${bodyX - 8}" y1="${kneeY}" x2="${bodyX - 8}" y2="${footY}" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="${bodyX + 5}" y1="${hipY}" x2="${bodyX + 8}" y2="${kneeY}" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="${bodyX + 8}" y1="${kneeY}" x2="${bodyX + 8}" y2="${footY}" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    ${barSvg}
+    ${dbSvg}
+  `;
+}
+
+function ground(y = 140) {
+  return `<line x1="20" y1="${y}" x2="180" y2="${y}" stroke="${MUTED}" stroke-width="2"/>`;
+}
+
+function svgFrame(content) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160">${content}</svg>`;
+}
+
+// ============ DIAGRAMS BY TYPE ============
+
+const DIAGRAMS = {
+  // BENCH PRESS / CHEST PRESS
+  press: {
+    start: () => svgFrame(`
+      ${ground(135)}
+      <!-- bench -->
+      <rect x="60" y="100" width="80" height="8" rx="3" fill="${MUTED}"/>
+      <rect x="65" y="108" width="6" height="27" fill="${MUTED}"/>
+      <rect x="129" y="108" width="6" height="27" fill="${MUTED}"/>
+      <!-- body lying -->
+      <circle cx="55" cy="95" r="9" fill="${COLOR}"/>
+      <rect x="62" y="88" width="75" height="14" rx="3" fill="${COLOR}"/>
+      <!-- legs off bench -->
+      <line x1="137" y1="95" x2="160" y2="95" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="160" y1="95" x2="165" y2="135" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <!-- arms at chest level -->
+      <line x1="95" y1="88" x2="95" y2="70" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="105" y1="88" x2="105" y2="70" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- bar on chest -->
+      <line x1="70" y1="67" x2="130" y2="67" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="70" cy="67" r="6" fill="${MUTED}"/>
+      <circle cx="130" cy="67" r="6" fill="${MUTED}"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(135)}
+      <rect x="60" y="100" width="80" height="8" rx="3" fill="${MUTED}"/>
+      <rect x="65" y="108" width="6" height="27" fill="${MUTED}"/>
+      <rect x="129" y="108" width="6" height="27" fill="${MUTED}"/>
+      <circle cx="55" cy="95" r="9" fill="${COLOR}"/>
+      <rect x="62" y="88" width="75" height="14" rx="3" fill="${COLOR}"/>
+      <line x1="137" y1="95" x2="160" y2="95" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="160" y1="95" x2="165" y2="135" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <!-- arms extended up -->
+      <line x1="95" y1="88" x2="95" y2="38" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="105" y1="88" x2="105" y2="38" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="70" y1="35" x2="130" y2="35" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="70" cy="35" r="6" fill="${MUTED}"/>
+      <circle cx="130" cy="35" r="6" fill="${MUTED}"/>
+    `),
+    labels: ['Bottom', 'Top'],
+  },
+
+  // PUSH-UP
+  pushup: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <!-- body plank, low -->
+      <circle cx="45" cy="110" r="9" fill="${COLOR}"/>
+      <rect x="52" y="104" width="105" height="12" rx="3" fill="${COLOR}"/>
+      <!-- arms bent -->
+      <line x1="60" y1="116" x2="55" y2="138" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="55" y1="138" x2="65" y2="138" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- legs straight -->
+      <line x1="157" y1="110" x2="180" y2="138" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <circle cx="45" cy="75" r="9" fill="${COLOR}"/>
+      <rect x="52" y="69" width="105" height="12" rx="3" fill="${COLOR}"/>
+      <!-- arms extended -->
+      <line x1="60" y1="81" x2="60" y2="138" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- legs straight -->
+      <line x1="157" y1="75" x2="180" y2="138" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    `),
+    labels: ['Bottom', 'Top'],
+  },
+
+  // PULL-UP / LAT PULLDOWN
+  pullup: {
+    start: () => svgFrame(`
+      <!-- bar -->
+      <line x1="50" y1="25" x2="150" y2="25" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+      <!-- arms up extended -->
+      <line x1="85" y1="30" x2="88" y2="70" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="115" y1="30" x2="112" y2="70" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- body hanging -->
+      <circle cx="100" cy="80" r="9" fill="${COLOR}"/>
+      <rect x="92" y="87" width="16" height="35" rx="3" fill="${COLOR}"/>
+      <line x1="95" y1="122" x2="92" y2="150" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="105" y1="122" x2="108" y2="150" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      <line x1="50" y1="25" x2="150" y2="25" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+      <!-- arms bent, body pulled up -->
+      <line x1="85" y1="30" x2="80" y2="55" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="80" y1="55" x2="92" y2="60" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="115" y1="30" x2="120" y2="55" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="120" y1="55" x2="108" y2="60" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="100" cy="50" r="9" fill="${COLOR}"/>
+      <rect x="92" y="58" width="16" height="40" rx="3" fill="${COLOR}"/>
+      <line x1="95" y1="98" x2="90" y2="135" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="105" y1="98" x2="110" y2="135" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    `),
+    labels: ['Hang', 'Pull up'],
+  },
+
+  // ROW
+  row: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <!-- torso bent forward -->
+      <circle cx="55" cy="55" r="9" fill="${COLOR}"/>
+      <rect x="60" y="50" width="60" height="14" rx="3" fill="${COLOR}" transform="rotate(8 60 55)"/>
+      <!-- arms down -->
+      <line x1="110" y1="68" x2="115" y2="110" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="115" y1="110" x2="145" y2="110" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="115" cy="110" r="5" fill="${MUTED}"/>
+      <circle cx="145" cy="110" r="5" fill="${MUTED}"/>
+      <!-- legs, slightly bent -->
+      <line x1="120" y1="70" x2="125" y2="105" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="125" y1="105" x2="128" y2="138" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <circle cx="55" cy="55" r="9" fill="${COLOR}"/>
+      <rect x="60" y="50" width="60" height="14" rx="3" fill="${COLOR}" transform="rotate(8 60 55)"/>
+      <!-- arms pulled to body -->
+      <line x1="110" y1="68" x2="95" y2="85" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="95" y1="85" x2="90" y2="72" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="85" y1="68" x2="115" y2="68" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="85" cy="68" r="5" fill="${MUTED}"/>
+      <circle cx="115" cy="68" r="5" fill="${MUTED}"/>
+      <line x1="120" y1="70" x2="125" y2="105" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="125" y1="105" x2="128" y2="138" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    `),
+    labels: ['Arms down', 'Pull to hip'],
+  },
+
+  // SQUAT
+  squat: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <!-- standing tall -->
+      <circle cx="100" cy="40" r="10" fill="${COLOR}"/>
+      <!-- bar on shoulders -->
+      <line x1="70" y1="52" x2="130" y2="52" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="70" cy="52" r="6" fill="${MUTED}"/>
+      <circle cx="130" cy="52" r="6" fill="${MUTED}"/>
+      <!-- torso -->
+      <rect x="92" y="50" width="16" height="45" rx="3" fill="${COLOR}"/>
+      <!-- arms holding bar -->
+      <line x1="92" y1="55" x2="80" y2="52" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="55" x2="120" y2="52" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- legs straight -->
+      <line x1="95" y1="95" x2="92" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="95" x2="108" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <!-- squatted position, lower -->
+      <circle cx="100" cy="65" r="10" fill="${COLOR}"/>
+      <line x1="70" y1="77" x2="130" y2="77" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="70" cy="77" r="6" fill="${MUTED}"/>
+      <circle cx="130" cy="77" r="6" fill="${MUTED}"/>
+      <rect x="92" y="75" width="16" height="30" rx="3" fill="${COLOR}"/>
+      <line x1="92" y1="80" x2="80" y2="77" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="80" x2="120" y2="77" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- bent legs -->
+      <line x1="95" y1="105" x2="75" y2="120" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="75" y1="120" x2="85" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="105" x2="125" y2="120" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="125" y1="120" x2="115" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+    `),
+    labels: ['Standing', 'Squat down'],
+  },
+
+  // HIP HINGE / DEADLIFT / RDL
+  hinge: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <circle cx="100" cy="40" r="10" fill="${COLOR}"/>
+      <rect x="92" y="50" width="16" height="45" rx="3" fill="${COLOR}"/>
+      <!-- arms down holding bar -->
+      <line x1="92" y1="58" x2="85" y2="92" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="58" x2="115" y2="92" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="70" y1="92" x2="130" y2="92" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="70" cy="92" r="6" fill="${MUTED}"/>
+      <circle cx="130" cy="92" r="6" fill="${MUTED}"/>
+      <!-- legs -->
+      <line x1="95" y1="95" x2="92" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="95" x2="108" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <!-- hinged forward, flat back -->
+      <circle cx="50" cy="65" r="10" fill="${COLOR}"/>
+      <rect x="55" y="60" width="55" height="14" rx="3" fill="${COLOR}" transform="rotate(10 55 65)"/>
+      <!-- arms hanging -->
+      <line x1="95" y1="80" x2="100" y2="115" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="105" y1="80" x2="110" y2="115" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="85" y1="115" x2="125" y2="115" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="85" cy="115" r="6" fill="${MUTED}"/>
+      <circle cx="125" cy="115" r="6" fill="${MUTED}"/>
+      <!-- legs nearly straight -->
+      <line x1="108" y1="82" x2="108" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+    `),
+    labels: ['Standing', 'Hinge forward'],
+  },
+
+  // BICEP CURL
+  curl: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <circle cx="100" cy="30" r="10" fill="${COLOR}"/>
+      <rect x="92" y="40" width="16" height="50" rx="3" fill="${COLOR}"/>
+      <!-- legs -->
+      <line x1="95" y1="90" x2="92" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="90" x2="108" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <!-- arms down extended -->
+      <line x1="92" y1="48" x2="82" y2="90" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="48" x2="118" y2="90" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <rect x="76" y="88" width="14" height="8" rx="2" fill="${MUTED}"/>
+      <rect x="110" y="88" width="14" height="8" rx="2" fill="${MUTED}"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <circle cx="100" cy="30" r="10" fill="${COLOR}"/>
+      <rect x="92" y="40" width="16" height="50" rx="3" fill="${COLOR}"/>
+      <line x1="95" y1="90" x2="92" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="90" x2="108" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <!-- upper arm down, forearm up -->
+      <line x1="92" y1="48" x2="88" y2="75" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="88" y1="75" x2="95" y2="48" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="48" x2="112" y2="75" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="112" y1="75" x2="105" y2="48" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <rect x="89" y="42" width="14" height="8" rx="2" fill="${MUTED}"/>
+      <rect x="97" y="42" width="14" height="8" rx="2" fill="${MUTED}"/>
+    `),
+    labels: ['Arms down', 'Curl up'],
+  },
+
+  // LATERAL RAISE
+  lateral: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <circle cx="100" cy="30" r="10" fill="${COLOR}"/>
+      <rect x="92" y="40" width="16" height="50" rx="3" fill="${COLOR}"/>
+      <line x1="95" y1="90" x2="92" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="90" x2="108" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <!-- arms at sides -->
+      <line x1="92" y1="48" x2="82" y2="90" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="48" x2="118" y2="90" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <rect x="76" y="88" width="14" height="8" rx="2" fill="${MUTED}"/>
+      <rect x="110" y="88" width="14" height="8" rx="2" fill="${MUTED}"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <circle cx="100" cy="30" r="10" fill="${COLOR}"/>
+      <rect x="92" y="40" width="16" height="50" rx="3" fill="${COLOR}"/>
+      <line x1="95" y1="90" x2="92" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="90" x2="108" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <!-- arms raised to shoulder height -->
+      <line x1="92" y1="48" x2="50" y2="52" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="48" x2="150" y2="52" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <rect x="40" y="48" width="14" height="8" rx="2" fill="${MUTED}"/>
+      <rect x="146" y="48" width="14" height="8" rx="2" fill="${MUTED}"/>
+    `),
+    labels: ['Arms down', 'Raise to sides'],
+  },
+
+  // TRICEP PUSHDOWN
+  pushdown: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <!-- cable from top -->
+      <line x1="100" y1="15" x2="100" y2="40" stroke="${MUTED}" stroke-width="2" stroke-dasharray="3 3"/>
+      <rect x="93" y="10" width="14" height="6" fill="${MUTED}"/>
+      <circle cx="100" cy="50" r="9" fill="${COLOR}"/>
+      <rect x="92" y="59" width="16" height="45" rx="3" fill="${COLOR}"/>
+      <line x1="95" y1="104" x2="92" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="104" x2="108" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <!-- forearms up, holding bar -->
+      <line x1="92" y1="65" x2="92" y2="45" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="65" x2="108" y2="45" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="85" y1="42" x2="115" y2="42" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <line x1="100" y1="15" x2="100" y2="85" stroke="${MUTED}" stroke-width="2" stroke-dasharray="3 3"/>
+      <rect x="93" y="10" width="14" height="6" fill="${MUTED}"/>
+      <circle cx="100" cy="50" r="9" fill="${COLOR}"/>
+      <rect x="92" y="59" width="16" height="45" rx="3" fill="${COLOR}"/>
+      <line x1="95" y1="104" x2="92" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="104" x2="108" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <!-- forearms down, bar pushed to hips -->
+      <line x1="92" y1="65" x2="90" y2="90" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="65" x2="110" y2="90" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="85" y1="90" x2="115" y2="90" stroke="${MUTED}" stroke-width="4" stroke-linecap="round"/>
+    `),
+    labels: ['Forearms up', 'Push down'],
+  },
+
+  // CALF RAISE
+  calf: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <circle cx="100" cy="40" r="10" fill="${COLOR}"/>
+      <rect x="92" y="50" width="16" height="50" rx="3" fill="${COLOR}"/>
+      <line x1="92" y1="58" x2="82" y2="100" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="58" x2="118" y2="100" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- legs straight, feet flat -->
+      <line x1="95" y1="100" x2="92" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="100" x2="108" y2="138" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <!-- feet -->
+      <rect x="82" y="137" width="20" height="4" fill="${COLOR}"/>
+      <rect x="98" y="137" width="20" height="4" fill="${COLOR}"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <!-- raised up on toes -->
+      <circle cx="100" cy="30" r="10" fill="${COLOR}"/>
+      <rect x="92" y="40" width="16" height="50" rx="3" fill="${COLOR}"/>
+      <line x1="92" y1="48" x2="82" y2="90" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="108" y1="48" x2="118" y2="90" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="95" y1="90" x2="95" y2="128" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <line x1="105" y1="90" x2="105" y2="128" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <!-- on toes, heels raised -->
+      <line x1="90" y1="128" x2="105" y2="138" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="100" y1="128" x2="115" y2="138" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+    `),
+    labels: ['Flat', 'Up on toes'],
+  },
+
+  // PLANK (hold, but we show the form from front vs incorrect)
+  plank: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <!-- proper plank: straight line -->
+      <circle cx="45" cy="88" r="9" fill="${COLOR}"/>
+      <rect x="52" y="82" width="110" height="12" rx="3" fill="${COLOR}"/>
+      <!-- forearms -->
+      <line x1="55" y1="94" x2="55" y2="138" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="55" y1="138" x2="70" y2="138" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- legs straight -->
+      <line x1="162" y1="88" x2="180" y2="138" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <!-- same, show alignment line -->
+      <circle cx="45" cy="88" r="9" fill="${COLOR}"/>
+      <rect x="52" y="82" width="110" height="12" rx="3" fill="${COLOR}"/>
+      <line x1="55" y1="94" x2="55" y2="138" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="55" y1="138" x2="70" y2="138" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="162" y1="88" x2="180" y2="138" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <!-- alignment dashed line -->
+      <line x1="45" y1="88" x2="180" y2="138" stroke="${COLOR}" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+    `),
+    labels: ['Hold position', 'Keep line'],
+  },
+
+  // RUNNING
+  run: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <!-- mid-stride position A -->
+      <circle cx="100" cy="40" r="10" fill="${COLOR}"/>
+      <rect x="92" y="50" width="16" height="40" rx="3" fill="${COLOR}" transform="rotate(-5 100 70)"/>
+      <!-- one arm forward, one back -->
+      <line x1="95" y1="58" x2="80" y2="85" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="105" y1="58" x2="120" y2="80" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- one leg forward, one back -->
+      <line x1="98" y1="90" x2="80" y2="120" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="80" y1="120" x2="90" y2="138" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="105" y1="90" x2="125" y2="115" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="125" y1="115" x2="130" y2="138" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <!-- mid-stride opposite -->
+      <circle cx="100" cy="38" r="10" fill="${COLOR}"/>
+      <rect x="92" y="48" width="16" height="40" rx="3" fill="${COLOR}" transform="rotate(5 100 68)"/>
+      <!-- opposite arms -->
+      <line x1="95" y1="55" x2="115" y2="80" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="105" y1="55" x2="85" y2="82" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- opposite legs -->
+      <line x1="98" y1="88" x2="115" y2="118" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="115" y1="118" x2="115" y2="138" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="105" y1="88" x2="80" y2="115" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+      <line x1="80" y1="115" x2="75" y2="138" stroke="${COLOR}" stroke-width="6" stroke-linecap="round"/>
+    `),
+    labels: ['Stride 1', 'Stride 2'],
+  },
+
+  // SWIM
+  swim: {
+    start: () => svgFrame(`
+      <!-- water -->
+      <path d="M0 105 Q50 98 100 105 T200 105 L200 160 L0 160 Z" fill="rgba(58,141,255,0.15)"/>
+      <path d="M0 108 Q50 100 100 108 T200 108" fill="none" stroke="${MUTED}" stroke-width="1.5"/>
+      <!-- freestyle, arm pulling -->
+      <ellipse cx="100" cy="100" rx="40" ry="10" fill="${COLOR}"/>
+      <circle cx="135" cy="100" r="8" fill="${COLOR}"/>
+      <!-- arm entering water -->
+      <line x1="60" y1="100" x2="35" y2="80" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- other arm trailing -->
+      <line x1="130" y1="105" x2="155" y2="120" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      <path d="M0 105 Q50 98 100 105 T200 105 L200 160 L0 160 Z" fill="rgba(58,141,255,0.15)"/>
+      <path d="M0 108 Q50 100 100 108 T200 108" fill="none" stroke="${MUTED}" stroke-width="1.5"/>
+      <ellipse cx="100" cy="100" rx="40" ry="10" fill="${COLOR}"/>
+      <circle cx="135" cy="100" r="8" fill="${COLOR}"/>
+      <!-- arm recovering over water -->
+      <line x1="60" y1="100" x2="80" y2="75" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="80" y1="75" x2="105" y2="80" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <!-- other arm pulling -->
+      <line x1="130" y1="105" x2="140" y2="125" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+    `),
+    labels: ['Catch', 'Recovery'],
+  },
+
+  // STATIONARY BIKE
+  bike: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <!-- bike frame -->
+      <circle cx="55" cy="115" r="22" fill="none" stroke="${MUTED}" stroke-width="3"/>
+      <circle cx="145" cy="115" r="22" fill="none" stroke="${MUTED}" stroke-width="3"/>
+      <line x1="55" y1="115" x2="100" y2="80" stroke="${MUTED}" stroke-width="3"/>
+      <line x1="145" y1="115" x2="100" y2="80" stroke="${MUTED}" stroke-width="3"/>
+      <line x1="100" y1="115" x2="100" y2="80" stroke="${MUTED}" stroke-width="3"/>
+      <!-- rider -->
+      <circle cx="95" cy="50" r="9" fill="${COLOR}"/>
+      <rect x="90" y="58" width="14" height="28" rx="3" fill="${COLOR}" transform="rotate(15 95 72)"/>
+      <!-- arms to handlebars -->
+      <line x1="100" y1="65" x2="130" y2="75" stroke="${COLOR}" stroke-width="4" stroke-linecap="round"/>
+      <!-- pedal position 1: right down -->
+      <line x1="100" y1="115" x2="115" y2="128" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="100" y1="115" x2="85" y2="102" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <circle cx="55" cy="115" r="22" fill="none" stroke="${MUTED}" stroke-width="3"/>
+      <circle cx="145" cy="115" r="22" fill="none" stroke="${MUTED}" stroke-width="3"/>
+      <line x1="55" y1="115" x2="100" y2="80" stroke="${MUTED}" stroke-width="3"/>
+      <line x1="145" y1="115" x2="100" y2="80" stroke="${MUTED}" stroke-width="3"/>
+      <line x1="100" y1="115" x2="100" y2="80" stroke="${MUTED}" stroke-width="3"/>
+      <circle cx="95" cy="50" r="9" fill="${COLOR}"/>
+      <rect x="90" y="58" width="14" height="28" rx="3" fill="${COLOR}" transform="rotate(15 95 72)"/>
+      <line x1="100" y1="65" x2="130" y2="75" stroke="${COLOR}" stroke-width="4" stroke-linecap="round"/>
+      <!-- pedal position 2: left down -->
+      <line x1="100" y1="115" x2="85" y2="128" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="100" y1="115" x2="115" y2="102" stroke="${COLOR}" stroke-width="5" stroke-linecap="round"/>
+    `),
+    labels: ['Pedal down', 'Pedal up'],
+  },
+
+  // STRETCH (seated forward fold as representative)
+  stretch: {
+    start: () => svgFrame(`
+      ${ground(140)}
+      <!-- seated upright -->
+      <circle cx="60" cy="70" r="9" fill="${COLOR}"/>
+      <rect x="52" y="78" width="16" height="35" rx="3" fill="${COLOR}"/>
+      <!-- legs extended -->
+      <line x1="68" y1="110" x2="155" y2="110" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <!-- arms down -->
+      <line x1="55" y1="88" x2="50" y2="108" stroke="${COLOR}" stroke-width="4" stroke-linecap="round"/>
+      <line x1="68" y1="88" x2="73" y2="108" stroke="${COLOR}" stroke-width="4" stroke-linecap="round"/>
+    `),
+    end: () => svgFrame(`
+      ${ground(140)}
+      <!-- folded forward -->
+      <circle cx="95" cy="95" r="9" fill="${COLOR}"/>
+      <rect x="58" y="95" width="42" height="14" rx="3" fill="${COLOR}" transform="rotate(-5 60 100)"/>
+      <!-- legs extended -->
+      <line x1="68" y1="110" x2="155" y2="110" stroke="${COLOR}" stroke-width="7" stroke-linecap="round"/>
+      <!-- arms reaching to feet -->
+      <line x1="100" y1="100" x2="140" y2="108" stroke="${COLOR}" stroke-width="4" stroke-linecap="round"/>
+    `),
+    labels: ['Upright', 'Fold forward'],
+  },
+};
+
+function makeAnim(type) {
+  const d = DIAGRAMS[type] || DIAGRAMS.press;
+  const arrow = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+  return `
+    <div class="ex-frames">
+      <div class="ex-frame">
+        ${d.start()}
+        <div class="ex-frame-label">${d.labels[0]}</div>
+      </div>
+      <div class="ex-arrow">${arrow}</div>
+      <div class="ex-frame">
+        ${d.end()}
+        <div class="ex-frame-label">${d.labels[1]}</div>
+      </div>
+    </div>
+  `;
+}
+
+function demoLink(exerciseName) {
+  const q = encodeURIComponent(exerciseName + ' exercise form');
+  return `<a class="ex-demo-link" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>
+    Watch demo on YouTube
+  </a>`;
+}
+
+// ============ RENDER ============
+
+function renderToday() {
+  const page = document.getElementById('todayPage');
+  const todayIdx = getTodayIdx();
+  const workoutId = state.schedule[todayIdx];
+  const w = WORKOUTS[workoutId];
+
+  let html = `
+    <div class="day-label">${DAY_NAMES_FULL[todayIdx]} · ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
+  `;
+
+  if (w.kind === 'rest') {
+    html += `
+      <div class="rest-card">
+        <div class="icon">🌙</div>
+        <h2>Rest Day</h2>
+        <p>Sleep well, eat well, walk if you want. Your body grows on rest days — don't skip them.</p>
+      </div>
+      <div class="swap-bar">
+        <button class="swap-btn" onclick="openSwapModal(${todayIdx})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12m0 0l-4-4m4 4l4-4"/></svg>
+          Swap day
+        </button>
+      </div>`;
+    page.innerHTML = html;
+    return;
+  }
+
+  // Flex day with no choice yet
+  if (w.kind === 'flex' && !getFlexChoice(todayIdx)) {
+    html += `
+      <div class="day-title"><span class="accent">Wildcard</span><br/>Day</div>
+      <div class="day-subtitle">Pick whichever fits your energy and schedule today.</div>
+      <div class="exercise-list">
+        ${w.options.map(o => `
+          <div class="exercise" onclick="chooseFlex(${todayIdx}, '${o.id}')" style="cursor: pointer;">
+            <div class="ex-head">
+              <div class="check"></div>
+              <div class="ex-body">
+                <div class="ex-name">${o.name}</div>
+                <div class="ex-meta">${o.exercises.length} exercises</div>
+              </div>
+              <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="swap-bar">
+        <button class="swap-btn" onclick="openSwapModal(${todayIdx})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12m0 0l-4-4m4 4l4-4"/></svg>
+          Swap with another day
+        </button>
+      </div>`;
+    page.innerHTML = html;
+    return;
+  }
+
+  const exercises = getExercisesForDay(todayIdx);
+  const comp = getCompletion(todayIdx);
+  const doneCount = exercises.filter(e => comp[e.id]).length;
+  const total = exercises.length;
+  const pct = total ? Math.round((doneCount / total) * 100) : 0;
+
+  // Title
+  let title = w.name;
+  let subtitle = w.subtitle;
+  if (w.kind === 'flex') {
+    const opt = w.options.find(o => o.id === getFlexChoice(todayIdx));
+    title = opt.name;
+    subtitle = w.subtitle;
+  }
+
+  html += `<div class="day-title">${title}</div>`;
+  html += `<div class="day-subtitle">${subtitle}</div>`;
+
+  // Weather card for run days
+  if (w.kind === 'run') {
+    html += renderWeatherCard(todayIdx);
+  }
+
+  // Progress ring
+  const circumference = 2 * Math.PI * 22;
+  const offset = circumference - (pct / 100) * circumference;
+  html += `
+    <div class="progress-strip">
+      <div class="progress-ring">
+        <svg width="54" height="54">
+          <circle class="ring-bg" cx="27" cy="27" r="22" fill="none" stroke-width="4"/>
+          <circle class="ring-fg" cx="27" cy="27" r="22" fill="none" stroke-width="4"
+            stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
+        </svg>
+        <div class="pct">${pct}%</div>
+      </div>
+      <div class="progress-text">
+        <div class="count">${doneCount} of ${total} done</div>
+        <div class="sub">${doneCount === total && total > 0 ? 'Nice work — session complete' : 'Tap each exercise as you finish it'}</div>
+      </div>
+    </div>
+  `;
+
+  // Filter toggle
+  const hasMixed = exercises.some(e => e.machine) && exercises.some(e => !e.machine);
+  if (hasMixed) {
+    html += `
+      <div class="section-header">
+        <div class="section-title">Exercises</div>
+      </div>
+      <div class="toggle-group">
+        <button class="toggle-btn ${state.toggle === 'all' ? 'active' : ''}" onclick="setToggle('all')">All</button>
+        <button class="toggle-btn ${state.toggle === 'machine' ? 'active' : ''}" onclick="setToggle('machine')">Machine</button>
+        <button class="toggle-btn ${state.toggle === 'no-machine' ? 'active' : ''}" onclick="setToggle('no-machine')">Free</button>
+      </div>
+    `;
+  } else {
+    html += `<div class="section-header"><div class="section-title">Exercises</div></div>`;
+  }
+
+  // Exercise list
+  html += `<div class="exercise-list">`;
+  const filtered = exercises.filter(e => {
+    if (state.toggle === 'machine') return e.machine;
+    if (state.toggle === 'no-machine') return !e.machine;
+    return true;
+  });
+  if (filtered.length === 0) {
+    html += `<div style="color: var(--text-dim); padding: 20px; text-align: center; font-size: 13px;">No exercises match this filter. Switch filter to see more.</div>`;
+  } else {
+    filtered.forEach(ex => {
+      const isDone = !!comp[ex.id];
+      html += `
+        <div class="exercise ${isDone ? 'done' : ''}" data-ex="${ex.id}">
+          <div class="ex-head" onclick="toggleExpand('${ex.id}', event)">
+            <div class="check ${isDone ? 'checked' : ''}" onclick="toggleDone(${todayIdx}, '${ex.id}', event)"></div>
+            <div class="ex-body">
+              <div class="ex-name">${ex.name}</div>
+              <div class="ex-meta">
+                <span>${ex.sets}</span>
+                <span class="dot"></span>
+                <span class="ex-tag">${ex.machine ? 'Machine' : 'Free'}</span>
+              </div>
+            </div>
+            <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="ex-detail">
+            <div class="ex-detail-inner">
+              <div class="ex-visual">${makeAnim(ex.anim)}${demoLink(ex.name)}</div>
+              <div class="ex-cues">
+                <strong>Form cues</strong>
+                <ul>${ex.cues.map(c => `<li>${c}</li>`).join('')}</ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+  html += `</div>`;
+
+  // Swap + flex change option
+  html += `<div class="swap-bar">
+    <button class="swap-btn" onclick="openSwapModal(${todayIdx})">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12m0 0l-4-4m4 4l4-4"/></svg>
+      Swap day
+    </button>`;
+  if (w.kind === 'flex') {
+    html += `<button class="swap-btn" onclick="resetFlexChoice(${todayIdx})">Change pick</button>`;
+  }
+  html += `</div>`;
+
+  page.innerHTML = html;
+}
+
+function renderWeatherCard(dayIdx) {
+  const indoor = getIndoor(dayIdx);
+  // Fake weather — in production this would call an API. For now, show a helpful card.
+  return `
+    <div class="weather-card">
+      <div class="weather-icon">${indoor ? '🏋️' : '🌤️'}</div>
+      <div class="weather-info">
+        <div class="temp">${indoor ? 'Indoor mode' : 'Check outside'}</div>
+        <div class="verdict">${indoor ? 'Gym cardio: treadmill, rower, or bike' : 'Good weather? Head out. Raining? Tap to switch.'}</div>
+      </div>
+      <button class="weather-swap" onclick="toggleIndoor(${dayIdx})">${indoor ? 'Go outside' : 'Go indoor'}</button>
+    </div>
+  `;
+}
+
+function renderWeek() {
+  const list = document.getElementById('weekList');
+  const todayIdx = getTodayIdx();
+  list.innerHTML = state.schedule.map((wid, idx) => {
+    const w = WORKOUTS[wid];
+    const status = getDayStatus(idx);
+    let badge = '';
+    if (w.kind === 'rest') badge = '<span class="day-badge badge-rest">Rest</span>';
+    else if (status === 'done') badge = '<span class="day-badge badge-done">Done</span>';
+    else if (status === 'partial') badge = '<span class="day-badge badge-partial">In progress</span>';
+
+    let name = w.name;
+    if (w.kind === 'flex' && getFlexChoice(idx)) {
+      name = w.options.find(o => o.id === getFlexChoice(idx)).name;
+    }
+
+    return `
+      <div class="day-row ${idx === todayIdx ? 'today' : ''}" onclick="openSwapModal(${idx})">
+        <div class="day-num">${DAY_NAMES[idx]}</div>
+        <div class="day-plan">
+          <div class="plan-name">${name}</div>
+          <div class="plan-sub">${w.subtitle || ''}</div>
+        </div>
+        ${badge}
+      </div>
+    `;
+  }).join('');
+}
+
+// ============ INTERACTIONS ============
+
+function toggleDone(dayIdx, exId, ev) {
+  ev.stopPropagation();
+  const current = getCompletion(dayIdx)[exId];
+  setExerciseDone(dayIdx, exId, !current);
+  // Haptic-ish feedback: vibrate if supported
+  if (navigator.vibrate) navigator.vibrate(8);
+  renderToday();
+  if (!current) {
+    // Check for completion
+    const exs = getExercisesForDay(dayIdx);
+    const comp = getCompletion(dayIdx);
+    if (exs.length > 0 && exs.every(e => comp[e.id])) {
+      setTimeout(() => showToast('Session complete 💪'), 200);
+    }
+  }
+}
+
+function toggleExpand(exId, ev) {
+  if (ev.target.closest('.check')) return;
+  const el = document.querySelector(`[data-ex="${exId}"]`);
+  if (el) el.classList.toggle('expanded');
+}
+
+function setToggle(val) {
+  state.toggle = val;
+  saveState();
+  renderToday();
+}
+
+function toggleIndoor(dayIdx) {
+  setIndoor(dayIdx, !getIndoor(dayIdx));
+  renderToday();
+}
+
+function chooseFlex(dayIdx, id) {
+  setFlexChoice(dayIdx, id);
+  renderToday();
+}
+
+function resetFlexChoice(dayIdx) {
+  delete state.flexChoice[state.weekKey]?.[dayIdx];
+  saveState();
+  renderToday();
+}
+
+function openSwapModal(dayIdx) {
+  const modal = document.getElementById('modal');
+  const fromName = WORKOUTS[state.schedule[dayIdx]].name;
+  modal.innerHTML = `
+    <h3>Swap ${DAY_NAMES_FULL[dayIdx]}</h3>
+    <p>Currently: <strong style="color: var(--text);">${fromName}</strong>. Pick another day to swap with.</p>
+    <div class="modal-list">
+      ${state.schedule.map((wid, idx) => {
+        if (idx === dayIdx) return '';
+        const w = WORKOUTS[wid];
+        let name = w.name;
+        if (w.kind === 'flex' && getFlexChoice(idx)) {
+          name = w.options.find(o => o.id === getFlexChoice(idx)).name;
+        }
+        return `
+          <div class="modal-item" onclick="swapDays(${dayIdx}, ${idx})">
+            <div>
+              <div class="ti">${DAY_NAMES_FULL[idx]}</div>
+              <div class="su">${name}</div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <button class="modal-close" onclick="closeModal()">Cancel</button>
+  `;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function swapDays(a, b) {
+  [state.schedule[a], state.schedule[b]] = [state.schedule[b], state.schedule[a]];
+  // Swap per-day state too
+  const swap = (obj, ak, bk) => {
+    const wk = state.weekKey;
+    if (!obj[wk]) return;
+    const va = obj[wk][ak];
+    const vb = obj[wk][bk];
+    if (va !== undefined) obj[wk][bk] = va; else delete obj[wk][bk];
+    if (vb !== undefined) obj[wk][ak] = vb; else delete obj[wk][ak];
+  };
+  swap(state.completion, a, b);
+  swap(state.indoor, a, b);
+  swap(state.flexChoice, a, b);
+  saveState();
+  closeModal();
+  renderToday();
+  renderWeek();
+  showToast('Days swapped');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function onBonus() {
+  incrementBonus();
+  updateBonusLabel();
+  showToast('Bonus run logged 🏃');
+  if (navigator.vibrate) navigator.vibrate(15);
+}
+
+function updateBonusLabel() {
+  const n = getBonus();
+  const label = document.getElementById('bonusLabel');
+  const btn = document.getElementById('bonusBtn');
+  if (n > 0) {
+    label.textContent = `${n} bonus run${n > 1 ? 's' : ''}`;
+    btn.classList.add('logged');
+  } else {
+    label.textContent = 'Bonus run';
+    btn.classList.remove('logged');
+  }
+}
+
+function reset() {
+  if (!confirm('Reset schedule to default and clear this week\'s progress?')) return;
+  state.schedule = [...DEFAULT_SCHEDULE];
+  state.completion[state.weekKey] = {};
+  state.indoor[state.weekKey] = {};
+  state.flexChoice[state.weekKey] = {};
+  state.bonus[state.weekKey] = 0;
+  saveState();
+  updateBonusLabel();
+  renderToday();
+  renderWeek();
+  showToast('Reset');
+}
+
+// ============ NAV ============
+
+function setPage(name) {
+  document.querySelectorAll('.tab, .nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === name);
+  });
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.toggle('active', p.id === name + 'Page');
+  });
+  if (name === 'today') renderToday();
+  if (name === 'week') renderWeek();
+}
+
+document.querySelectorAll('.tab, .nav-btn').forEach(b => {
+  b.addEventListener('click', () => setPage(b.dataset.page));
+});
+
+document.getElementById('bonusBtn').addEventListener('click', onBonus);
+document.getElementById('resetBtn').addEventListener('click', reset);
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+
+// Initial render
+renderToday();
+renderWeek();
+updateBonusLabel();
+</script>
+</body>
+</html>
